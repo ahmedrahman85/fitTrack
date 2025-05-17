@@ -5,7 +5,9 @@ import { createClient } from "@supabase/supabase-js";
 // access Supabase environment variables
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseKey = import.meta.env.VITE_SUPABASE_KEY;
-
+function containsIgnoreCase(text, search) {
+  return String(text || '').toLowerCase().includes(String(search || '').toLowerCase());
+}
 
 const supabase = createClient(supabaseUrl, supabaseKey);
 
@@ -178,15 +180,19 @@ function CreateWorkout() {
   };
 
   // search for exercises using the API
+  
   const searchExercises = async () => {
     if (!searchTerm) return;
+
+    // Convert search term to lowercase here
+    const lowercaseSearchTerm = searchTerm.toLowerCase();
 
     setIsSearching(true);
     setError(null);
 
     try {
       const response = await fetch(
-        `https://exercisedb.p.rapidapi.com/exercises/name/${searchTerm}`,
+        `https://exercisedb.p.rapidapi.com/exercises/name/${lowercaseSearchTerm}`,
         {
           method: "GET",
           headers: {
@@ -206,27 +212,47 @@ function CreateWorkout() {
       console.error("Error searching exercises:", err);
       setError("Failed to search exercises. Please try again.");
       
-      // create fake results for demonstration if API fails
-      const fakeResults = [
+      // Create realistic exercise examples
+      const fakeExercises = [
         {
           id: "fake1",
-          name: `${searchTerm} exercise 1`,
+          name: "Bench Press",
           bodyPart: "chest",
           equipment: "barbell"
         },
         {
           id: "fake2",
-          name: `${searchTerm} exercise 2`,
+          name: "Pull-up",
           bodyPart: "back",
-          equipment: "dumbbell"
+          equipment: "body weight"
         },
         {
           id: "fake3",
-          name: `${searchTerm} exercise 3`,
+          name: "Squat",
           bodyPart: "upper legs",
+          equipment: "body weight"
+        },
+        {
+          id: "fake4",
+          name: "Deadlift",
+          bodyPart: "upper legs",
+          equipment: "barbell"
+        },
+        {
+          id: "fake5",
+          name: "Push-up",
+          bodyPart: "chest",
           equipment: "body weight"
         }
       ];
+      
+      // Filter with case-insensitive search
+      const fakeResults = fakeExercises.filter(exercise => 
+        containsIgnoreCase(exercise.name, searchTerm) || 
+        containsIgnoreCase(exercise.bodyPart, searchTerm) || 
+        containsIgnoreCase(exercise.equipment, searchTerm)
+      );
+      
       setSearchResults(fakeResults);
     } finally {
       setIsSearching(false);
